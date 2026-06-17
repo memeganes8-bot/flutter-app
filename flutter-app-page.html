@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>App Móvil Flutter — Diego Mendez</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      :root {
+        --bg: #020817;
+        --bg2: #0a1628;
+        --bg3: #0d1f3c;
+        --blue: #3b82f6;
+        --cyan: #06b6d4;
+        --border: rgba(59,130,246,0.15);
+        --text: #f0f6ff;
+        --muted: #94a3b8;
+        --dim: #475569;
+      }
+      html { scroll-behavior: smooth; }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'Syne', sans-serif;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+      .mono { font-family: 'Space Mono', monospace; }
+
+      /* NAV */
+      nav {
+        position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+        padding: 16px 40px;
+        display: flex; align-items: center; justify-content: space-between;
+        background: rgba(2,8,23,0.85);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border);
+      }
+      .logo { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--blue); letter-spacing: 2px; text-decoration: none; }
+      .nav-badge {
+        font-family: 'Space Mono', monospace; font-size: 10px;
+        color: #f59e0b; background: rgba(245,158,11,0.1);
+        border: 1px solid rgba(245,158,11,0.3);
+        border-radius: 6px; padding: 4px 12px; letter-spacing: 1px;
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+      /* HERO */
+      .hero {
+        min-height: 100vh;
+        display: flex; align-items: center; justify-content: center;
+        position: relative; overflow: hidden;
+        padding: 120px 40px 80px;
+      }
+      .glow1 {
+        position: absolute; top: 15%; left: 55%;
+        width: 500px; height: 500px;
+        background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%);
+        border-radius: 50%; pointer-events: none;
+        animation: float 6s ease-in-out infinite;
+      }
+      .glow2 {
+        position: absolute; bottom: 10%; left: 5%;
+        width: 300px; height: 300px;
+        background: radial-gradient(circle, rgba(6,182,212,0.07) 0%, transparent 70%);
+        border-radius: 50%; pointer-events: none;
+        animation: float 8s ease-in-out infinite reverse;
+      }
+      @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)} }
+
+      .hero-content { max-width: 680px; position: relative; z-index: 1; }
+      .hero-label {
+        font-family: 'Space Mono', monospace; font-size: 12px;
+        color: var(--cyan); letter-spacing: 3px; margin-bottom: 20px;
+      }
+      .hero-title { font-size: clamp(44px, 7vw, 80px); font-weight: 800; line-height: 1.05; letter-spacing: -2px; margin-bottom: 24px; }
+      .gradient-text {
+        background: linear-gradient(135deg, #3b82f6, #06b6d4);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      }
+      .hero-desc { font-size: 16px; color: var(--muted); line-height: 1.8; margin-bottom: 40px; max-width: 520px; }
+
+      .status-bar {
+        display: flex; align-items: center; gap: 12px;
+        background: var(--bg2); border: 1px solid rgba(245,158,11,0.2);
+        border-radius: 12px; padding: 14px 20px; margin-bottom: 40px;
+        max-width: 420px;
+      }
+      .status-dot {
+        width: 10px; height: 10px; border-radius: 50%; background: #f59e0b;
+        box-shadow: 0 0 8px #f59e0b; flex-shrink: 0;
+        animation: pulse 1.5s infinite;
+      }
+      .status-text { font-family: 'Space Mono', monospace; font-size: 12px; color: #f59e0b; letter-spacing: 1px; }
+
+      .tech-pills { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 40px; }
+      .pill {
+        font-family: 'Space Mono', monospace; font-size: 11px;
+        color: var(--muted); background: rgba(255,255,255,0.04);
+        border: 1px solid var(--border); border-radius: 6px; padding: 6px 14px;
+        transition: all 0.2s;
+      }
+      .pill:hover { color: var(--blue); border-color: rgba(59,130,246,0.4); }
+
+      .cta-row { display: flex; gap: 14px; flex-wrap: wrap; }
+      .btn-primary {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: var(--blue); color: #fff;
+        padding: 14px 28px; border-radius: 10px;
+        font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px;
+        text-decoration: none; transition: all 0.2s; border: none; cursor: pointer;
+      }
+      .btn-primary:hover { background: #2563eb; transform: translateY(-2px); }
+      .btn-ghost {
+        display: inline-flex; align-items: center; gap: 8px;
+        border: 1px solid var(--border); color: var(--text);
+        padding: 14px 28px; border-radius: 10px;
+        font-family: 'Syne', sans-serif; font-weight: 600; font-size: 14px;
+        text-decoration: none; transition: all 0.2s; background: transparent;
+      }
+      .btn-ghost:hover { border-color: var(--blue); color: var(--blue); transform: translateY(-2px); }
+
+      /* PHONE MOCKUP */
+      .phone-wrapper {
+        position: absolute; right: 8%; top: 50%; transform: translateY(-50%);
+        width: 260px;
+      }
+      .phone {
+        width: 260px; height: 520px;
+        background: #0a1628;
+        border: 2px solid rgba(59,130,246,0.3);
+        border-radius: 36px;
+        position: relative; overflow: hidden;
+        box-shadow: 0 0 60px rgba(59,130,246,0.1), inset 0 0 30px rgba(0,0,0,0.5);
+      }
+      .phone-notch {
+        position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+        width: 80px; height: 22px; background: #020817;
+        border-radius: 12px; z-index: 10;
+      }
+      .map-container {
+        width: 100%; height: 100%; position: relative; overflow: hidden;
+      }
+      .map-bg {
+        width: 100%; height: 100%;
+        background: #1a2744;
+        position: relative;
+      }
+      /* Fake roads */
+      .road { position: absolute; background: rgba(59,130,246,0.15); }
+      .road-h { height: 2px; width: 100%; }
+      .road-v { width: 2px; height: 100%; }
+      .road-main { background: rgba(59,130,246,0.25); }
+
+      /* Map UI overlay */
+      .map-header {
+        position: absolute; top: 0; left: 0; right: 0;
+        padding: 40px 14px 12px;
+        background: linear-gradient(to bottom, rgba(10,22,40,0.95), transparent);
+        z-index: 5;
+      }
+      .search-bar {
+        background: rgba(15,30,60,0.9); border: 1px solid rgba(59,130,246,0.3);
+        border-radius: 10px; padding: 8px 12px;
+        display: flex; align-items: center; gap: 8px;
+      }
+      .search-icon { color: var(--blue); font-size: 14px; }
+      .search-text { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--dim); }
+
+      /* Location pin */
+      .pin {
+        position: absolute; z-index: 6;
+        display: flex; flex-direction: column; align-items: center;
+      }
+      .pin-circle {
+        width: 18px; height: 18px; border-radius: 50%;
+        background: var(--blue); border: 3px solid rgba(59,130,246,0.3);
+        box-shadow: 0 0 0 6px rgba(59,130,246,0.15);
+        animation: ripple 2s infinite;
+      }
+      @keyframes ripple {
+        0% { box-shadow: 0 0 0 0 rgba(59,130,246,0.4); }
+        70% { box-shadow: 0 0 0 12px rgba(59,130,246,0); }
+        100% { box-shadow: 0 0 0 0 rgba(59,130,246,0); }
+      }
+
+      /* Route line */
+      .route-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 4; pointer-events: none; }
+
+      .map-footer {
+        position: absolute; bottom: 0; left: 0; right: 0;
+        padding: 12px 14px 20px;
+        background: linear-gradient(to top, rgba(10,22,40,0.98), transparent);
+        z-index: 5;
+      }
+      .nav-card {
+        background: rgba(15,30,60,0.95); border: 1px solid rgba(59,130,246,0.25);
+        border-radius: 12px; padding: 10px 12px;
+      }
+      .nav-dest { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+      .nav-info { display: flex; gap: 10px; }
+      .nav-info span { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--blue); }
+      .start-btn {
+        margin-top: 8px; width: 100%;
+        background: linear-gradient(135deg, #3b82f6, #06b6d4);
+        border: none; border-radius: 8px; padding: 8px;
+        font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; color: #fff;
+        cursor: pointer;
+      }
+
+      /* FEATURES */
+      .features { padding: 100px 40px; max-width: 1100px; margin: 0 auto; }
+      .section-label { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--cyan); letter-spacing: 3px; margin-bottom: 12px; }
+      .section-title { font-size: clamp(28px, 4vw, 44px); font-weight: 800; letter-spacing: -1px; margin-bottom: 48px; }
+      .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+      .feature-card {
+        background: var(--bg2); border: 1px solid var(--border);
+        border-radius: 16px; padding: 28px;
+        transition: border-color 0.3s, transform 0.3s;
+      }
+      .feature-card:hover { border-color: rgba(59,130,246,0.4); transform: translateY(-4px); }
+      .feature-icon {
+        width: 48px; height: 48px; border-radius: 12px;
+        background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 22px; margin-bottom: 16px;
+      }
+      .feature-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+      .feature-desc { font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+      /* PROGRESS */
+      .progress-section { padding: 80px 40px; max-width: 700px; margin: 0 auto; text-align: center; }
+      .progress-bar-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 32px; margin-top: 40px; text-align: left; }
+      .progress-item { margin-bottom: 20px; }
+      .progress-label { display: flex; justify-content: space-between; margin-bottom: 8px; }
+      .progress-name { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted); }
+      .progress-pct { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--blue); }
+      .progress-track { height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+      .progress-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, #3b82f6, #06b6d4); transition: width 1s ease; }
+
+      /* FOOTER */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 32px 40px; text-align: center;
+      }
+      footer p { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--dim); letter-spacing: 1px; }
+      footer a { color: var(--blue); text-decoration: none; }
+
+      @media (max-width: 900px) {
+        .phone-wrapper { display: none; }
+        nav { padding: 14px 20px; }
+        .hero { padding: 100px 20px 60px; }
+        .features { padding: 60px 20px; }
+        .progress-section { padding: 60px 20px; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <nav>
+      <a href="#" class="logo">{'<DJM />'}</a>
+      <span class="nav-badge">EN DESARROLLO</span>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="glow1"></div>
+      <div class="glow2"></div>
+
+      <div class="hero-content">
+        <p class="hero-label">// Proyecto Mobile</p>
+        <h1 class="hero-title">
+          App Móvil<br>
+          <span class="gradient-text">Google Maps</span>
+        </h1>
+
+        <div class="status-bar">
+          <div class="status-dot"></div>
+          <span class="status-text">PROYECTO EN DESARROLLO ACTIVO</span>
+        </div>
+
+        <p class="hero-desc">
+          Aplicación móvil nativa construida con Flutter que integra la API de Google Maps
+          para localización, navegación en tiempo real y experiencias geoespaciales.
+        </p>
+
+        <div class="tech-pills">
+          <span class="pill">Flutter</span>
+          <span class="pill">Dart</span>
+          <span class="pill">Google Maps API</span>
+          <span class="pill">Geolocalización</span>
+          <span class="pill">Android & iOS</span>
+        </div>
+
+        <div class="cta-row">
+          <a href="https://github.com/memeganes8-bot" target="_blank" class="btn-primary">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+            Ver en GitHub
+          </a>
+          <a href="#features" class="btn-ghost">Ver funcionalidades</a>
+        </div>
+      </div>
+
+      <!-- PHONE MOCKUP -->
+      <div class="phone-wrapper">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="map-container">
+            <div class="map-bg">
+              <!-- Fake map grid roads -->
+              <div class="road road-h road-main" style="top:25%"></div>
+              <div class="road road-h" style="top:35%"></div>
+              <div class="road road-h road-main" style="top:50%"></div>
+              <div class="road road-h" style="top:62%"></div>
+              <div class="road road-h road-main" style="top:75%"></div>
+              <div class="road road-v road-main" style="left:25%"></div>
+              <div class="road road-v" style="left:40%"></div>
+              <div class="road road-v road-main" style="left:60%"></div>
+              <div class="road road-v" style="left:75%"></div>
+
+              <!-- Blocks -->
+              <div style="position:absolute;top:26%;left:26%;width:12%;height:8%;background:rgba(59,130,246,0.07);border-radius:3px"></div>
+              <div style="position:absolute;top:26%;left:41%;width:17%;height:8%;background:rgba(59,130,246,0.05);border-radius:3px"></div>
+              <div style="position:absolute;top:36%;left:26%;width:12%;height:13%;background:rgba(59,130,246,0.06);border-radius:3px"></div>
+              <div style="position:absolute;top:36%;left:61%;width:12%;height:13%;background:rgba(59,130,246,0.07);border-radius:3px"></div>
+              <div style="position:absolute;top:51%;left:26%;width:12%;height:10%;background:rgba(59,130,246,0.05);border-radius:3px"></div>
+              <div style="position:absolute;top:51%;left:41%;width:17%;height:10%;background:rgba(59,130,246,0.06);border-radius:3px"></div>
+              <div style="position:absolute;top:63%;left:26%;width:32%;height:11%;background:rgba(59,130,246,0.05);border-radius:3px"></div>
+              <div style="position:absolute;top:63%;left:61%;width:12%;height:11%;background:rgba(59,130,246,0.07);border-radius:3px"></div>
+
+              <!-- Route SVG -->
+              <svg class="route-svg" viewBox="0 0 260 520" fill="none">
+                <path d="M 65 130 L 65 260 L 156 260 L 156 390" stroke="#3b82f6" stroke-width="3" stroke-dasharray="6,4" stroke-linecap="round" opacity="0.8"/>
+                <path d="M 65 130 L 65 260 L 156 260 L 156 390" stroke="#06b6d4" stroke-width="1.5" stroke-dasharray="6,4" stroke-linecap="round" opacity="0.4"/>
+              </svg>
+
+              <!-- Current location pin -->
+              <div class="pin" style="top:22%;left:20%">
+                <div class="pin-circle"></div>
+              </div>
+
+              <!-- Destination pin -->
+              <div class="pin" style="top:70%;left:55%">
+                <svg width="22" height="28" viewBox="0 0 22 28" fill="none">
+                  <path d="M11 0C4.925 0 0 4.925 0 11c0 7.5 11 17 11 17s11-9.5 11-17C22 4.925 17.075 0 11 0z" fill="#3b82f6"/>
+                  <circle cx="11" cy="11" r="4" fill="white"/>
+                </svg>
+              </div>
+
+            </div>
+
+            <!-- MAP UI -->
+            <div class="map-header">
+              <div class="search-bar">
+                <span class="search-icon">⊕</span>
+                <span class="search-text">Buscar destino...</span>
+              </div>
+            </div>
+
+            <div class="map-footer">
+              <div class="nav-card">
+                <div class="nav-dest">Centro Comercial</div>
+                <div class="nav-info">
+                  <span>2.4 km</span>
+                  <span>•</span>
+                  <span>8 min</span>
+                  <span>•</span>
+                  <span>Ruta óptima</span>
+                </div>
+                <button class="start-btn">Iniciar navegación</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="features" id="features">
+      <p class="section-label">Funcionalidades</p>
+      <h2 class="section-title">¿Qué hace <span class="gradient-text">esta app</span>?</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📍</div>
+          <h3 class="feature-title">Geolocalización en tiempo real</h3>
+          <p class="feature-desc">Detecta la ubicación del usuario con alta precisión y la muestra en el mapa de forma dinámica.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🗺️</div>
+          <h3 class="feature-title">Integración Google Maps</h3>
+          <p class="feature-desc">Mapa interactivo con zoom, capas y marcadores personalizados usando la API oficial de Google.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🧭</div>
+          <h3 class="feature-title">Navegación y rutas</h3>
+          <p class="feature-desc">Calcula rutas optimizadas entre puntos con instrucciones paso a paso para el usuario.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📱</div>
+          <h3 class="feature-title">Android & iOS nativo</h3>
+          <p class="feature-desc">Una sola base de código en Flutter que corre de forma nativa en ambas plataformas.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROGRESS -->
+    <section class="progress-section">
+      <p class="section-label">Progreso</p>
+      <h2 class="section-title">Estado del <span class="gradient-text">desarrollo</span></h2>
+      <div class="progress-bar-wrap">
+        <div class="progress-item">
+          <div class="progress-label">
+            <span class="progress-name">Estructura base Flutter</span>
+            <span class="progress-pct">90%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:90%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-label">
+            <span class="progress-name">Integración Google Maps API</span>
+            <span class="progress-pct">75%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:75%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-label">
+            <span class="progress-name">Geolocalización en tiempo real</span>
+            <span class="progress-pct">60%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:60%"></div></div>
+        </div>
+        <div class="progress-item" style="margin-bottom:0">
+          <div class="progress-label">
+            <span class="progress-name">Navegación y rutas</span>
+            <span class="progress-pct">30%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:30%"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p>Proyecto en desarrollo · <a href="https://github.com/memeganes8-bot" target="_blank">github.com/memeganes8-bot</a> · Diego Javier Mendez Ortiz</p>
+    </footer>
+
+  </body>
+</html>
